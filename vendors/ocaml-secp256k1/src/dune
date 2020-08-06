@@ -6,7 +6,7 @@
  (c_names         secp256k1
                   secp256k1_wrap)
  (c_flags         (:include c_flags.sexp))
- (c_library_flags (-lgmp)))
+ (c_library_flags (-L/usr/local/lib -lgmp)))
 
 (rule
  (targets c_flags.sexp)

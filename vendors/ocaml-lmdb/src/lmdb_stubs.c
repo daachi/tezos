@@ -11,7 +11,7 @@
 #include <caml/custom.h>
 #include <caml/bigarray.h>
 
-#include "lmdb.h"
+#include <lmdb.h>
 
 CAMLprim value stub_mdb_version(value unit) {
     CAMLparam1(unit);
@@ -536,7 +536,7 @@ CAMLprim value stub_mdb_cursor_count(value cursor) {
     CAMLparam1(cursor);
     CAMLlocal1(result);
 
-    mdb_size_t count;
+    size_t count;
     int ret;
 
     ret = mdb_cursor_count(Cursor_val(cursor), &count);

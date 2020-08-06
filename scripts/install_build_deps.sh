@@ -3,7 +3,7 @@
 set -e
 
 script_dir="$(cd "$(dirname "$0")" && echo "$(pwd -P)/")"
-src_dir="$(dirname "$script_dir")"
+src_dir="${OPAMSWITCH_CREATE:-$(dirname "$script_dir")}"
 
 . "$script_dir"/version.sh
 
@@ -27,7 +27,7 @@ if [ ! -d "$src_dir/_opam" ] ; then
     exit 1
 fi
 
-eval $(opam env --shell=sh)
+eval $(opam env --shell=sh --switch $src_dir --set-switch)
 
 if [ -n "$dev" ]; then
     opam repository remove default > /dev/null 2>&1 || true
@@ -36,8 +36,6 @@ fi
 if [ "$(ocaml -vnum)" != "$ocaml_version" ]; then
     opam install --unlock-base ocaml-base-compiler.$ocaml_version
 fi
-
-opam install --yes opam-depext
 
 "$script_dir"/install_build_deps.raw.sh
 
