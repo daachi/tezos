@@ -33,7 +33,7 @@ all: generate_dune
 ifneq (${current_ocaml_version},${ocaml_version})
 	$(error Unexpected ocaml version (found: ${current_ocaml_version}, expected: ${ocaml_version}))
 endif
-	@dune build \
+	@env C_INCLUDE_PATH=/usr/local/include dune build \
 		src/bin_node/main.exe \
 		src/bin_validation/main_validator.exe \
 		src/bin_client/main_client.exe \
