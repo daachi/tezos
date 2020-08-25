@@ -37,6 +37,8 @@ if [ "$(ocaml -vnum)" != "$ocaml_version" ]; then
     opam install --unlock-base ocaml-base-compiler.$ocaml_version
 fi
 
+opam install --yes opam-depext
+
 "$script_dir"/install_build_deps.raw.sh
 
 if [ -n "$dev" ]; then
