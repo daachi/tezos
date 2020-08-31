@@ -623,4 +623,53 @@ let commands version : Client_context.full Clic.command list =
           Client_keys.deterministic_nonce_hash sk_uri data
           >>=? fun nonce_hash ->
           cctxt#message "%a" Hex.pp (Hex.of_bytes nonce_hash)
-          >>= fun () -> return_unit) ]
+          >>= fun () -> return_unit);
+      command
+        ~group
+        ~desc:"Generate keys from mnemonic."
+        (args1
+           (arg
+              ~doc:"The passphrase with which to encrypt your mnemonic."
+              ~long:"passphrase"
+              ~placeholder:"string"
+              (Clic.parameter (fun _ s -> return s))))
+        ( prefixes ["gen"; "keys"; "from"; "mnemonic"]
+        @@ param
+             ~name:"mnemonic"
+             ~desc:"Mnemonic words of length [12 | 15 | 18 | 21 | 24]."
+             (Clic.parameter (fun _ s -> return s))
+        @@ stop )
+        (fun passphrase mnemonic (cctx : Client_context.full) ->
+          let mnemonic = String.split_on_char ' ' mnemonic in
+          match Bip39.of_words mnemonic with
+          | None ->
+              failwith
+                "\"%s\" does not contain a valid number of words."
+                (String.concat " " mnemonic)
+          | Some t ->
+              let passphrase =
+                match passphrase with
+                | None ->
+                    Bytes.empty
+                | Some s ->
+                    Bytes.of_string s
+              in
+              let sk = Bip39.to_seed ~passphrase t in
+              let sk = Bytes.sub sk 0 32 in
+              let sk : Signature.Secret_key.t =
+                Ed25519
+                  (Data_encoding.Binary.of_bytes_exn
+                     Ed25519.Secret_key.encoding
+                     sk)
+              in
+              let pk = Signature.Secret_key.to_public_key sk in
+              let pkh = Signature.Public_key.hash pk in
+              cctx#message
+                "%a@.%a@.%a@."
+                Signature.Public_key_hash.pp
+                pkh
+                Signature.Public_key.pp
+                pk
+                Signature.Secret_key.pp
+                sk
+              >>= fun () -> return ()) ]
