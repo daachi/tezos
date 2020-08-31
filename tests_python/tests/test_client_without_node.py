@@ -25,7 +25,8 @@ _INPUT_CONFIG_FILES = [None, _INPUT_CONFIG_FILE]
 @pytest.mark.client
 class TestGenKeyMnemonic:
     def test_gen_key_from_menmonic(self, client: Client):
-        mnemonic = 'seek paddle siege sting siege sick kidney detect coral because comfort long enforce napkin enter'
+        mnemonic = 'seek paddle siege sting siege sick kidney'
+        mnemonic += ' detect coral because comfort long enforce napkin enter'
         passphrase = "very_secure_passphrase"
         prms = ['generate', 'keys', 'from', 'mnemonic',
                 mnemonic, '--passphrase', passphrase]
