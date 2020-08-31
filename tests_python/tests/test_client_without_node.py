@@ -23,6 +23,18 @@ _INPUT_CONFIG_FILES = [None, _INPUT_CONFIG_FILE]
 
 
 @pytest.mark.client
+class TestGenKeyMnemonic:
+    def test_gen_key_from_menmonic(self, client: Client):
+        mnemonic = 'seek paddle siege sting siege sick kidney detect coral because comfort long enforce napkin enter'
+        passphrase = "very_secure_passphrase"
+        prms = ['generate', 'keys', 'from', 'mnemonic',
+                mnemonic, '--passphrase', passphrase]
+        assert client.run(prms).strip() == """tz1QSF4TSVzaosgbaxnFJpRbs7798Skeb8Re
+edpkuKugcNWif4y3u8GrL19YtzDytzBvHJu7NSfK6oT8WLVAPHZ4R7
+edsk3YXv8eyRyaKovEUQiNByiVM984s2nshWy2Qs4XSpckbwJbPFCh"""
+
+
+@pytest.mark.client
 class TestChainId:
 
     def test_chain_id_block_hash(self, simple_client: Client):
