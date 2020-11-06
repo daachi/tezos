@@ -48,6 +48,18 @@ module Scheduler (IO : IO) = struct
      recursive types: fields canceler, counter and quota *)
   [@@@ocaml.warning "-30"]
 
+  type connection = {
+    id : int;
+    mutable closed : bool;
+    canceler : Lwt_canceler.t;
+    in_param : IO.in_param;
+    out_param : IO.out_param;
+    mutable current_pop : Bytes.t tzresult Lwt.t;
+    mutable current_push : unit tzresult Lwt.t;
+    counter : Moving_average.t;
+    mutable quota : int;
+  }
+
   type t = {
     ma_state : Moving_average.state;
     canceler : Lwt_canceler.t;
@@ -59,18 +71,6 @@ module Scheduler (IO : IO) = struct
     readys : unit Lwt_condition.t;
     readys_high : (connection * Bytes.t tzresult) Queue.t;
     readys_low : (connection * Bytes.t tzresult) Queue.t;
-  }
-
-  and connection = {
-    id : int;
-    mutable closed : bool;
-    canceler : Lwt_canceler.t;
-    in_param : IO.in_param;
-    out_param : IO.out_param;
-    mutable current_pop : Bytes.t tzresult Lwt.t;
-    mutable current_push : unit tzresult Lwt.t;
-    counter : Moving_average.t;
-    mutable quota : int;
   }
 
   [@@@ocaml.warning "+30"]
@@ -291,7 +291,6 @@ module WriteScheduler = Scheduler (struct
 end)
 
 type connection = {
-  sched : t;
   fd : P2p_fd.t;
   canceler : Lwt_canceler.t;
   read_conn : ReadScheduler.connection;
@@ -299,6 +298,7 @@ type connection = {
   write_conn : WriteScheduler.connection;
   write_queue : Bytes.t Lwt_pipe.t;
   mutable partial_read : Bytes.t option;
+  close : unit -> unit;
 }
 
 and t = {
@@ -421,7 +421,6 @@ let register st fd =
             Lwt.return_unit) ;
     let conn =
       {
-        sched = st;
         fd;
         canceler;
         read_queue;
@@ -429,6 +428,7 @@ let register st fd =
         write_queue;
         write_conn;
         partial_read = None;
+        close = (fun () -> P2p_fd.Table.remove st.connected fd);
       }
     in
     P2p_fd.Table.add st.connected conn.fd conn ;
@@ -517,7 +517,7 @@ let stat {read_conn; write_conn; _} =
 
 let close ?timeout conn =
   let id = P2p_fd.id conn.fd in
-  P2p_fd.Table.remove conn.sched.connected conn.fd ;
+  conn.close () ;
   Lwt_pipe.close conn.write_queue ;
   ( match timeout with
   | None ->
