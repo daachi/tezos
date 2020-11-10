@@ -1,0 +1,6 @@
+all:
+	opam init --bare --no-opamrc --no-setup --root=./_root
+	OPAMROOT=./_root gmake build-deps
+	OPAMROOT=./_root export OPAMROOT; eval $$(opam env --root=./_root --switch=.) gmake all
+
+
