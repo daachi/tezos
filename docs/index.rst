@@ -129,6 +129,7 @@ in the :ref:`introduction <howtoget>`.
 
    007/michelson
    007/proof_of_stake
+   007/emmy
    007/voting
    007/glossary
    007/cli-commands
