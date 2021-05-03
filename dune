@@ -3,3 +3,4 @@
   (ocamlopt_flags (:standard -O3))))
 
 (vendored_dirs vendors)
+(data_only_dirs local-deps)

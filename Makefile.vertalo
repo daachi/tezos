@@ -1,0 +1,23 @@
+# For GNU make
+C_INCLUDE_PATH:=/usr/local/include 
+# RUST_VERSION=1.44.1
+
+SHELL:=/bin/sh
+THIS_DIR:=$(shell pwd -P)
+OPAMROOT_DIR:=$(THIS_DIR)/_root
+OPAMSWITCH_DIR:=$(THIS_DIR)
+OCAML_COMPILER:=ocaml-base-compiler.4.10.2
+
+# LD_LIBRARY_PATH:="/usr/local/lib:${LD_LIBRARY_PATH}"
+
+init:
+	opam init --bare --no-opamrc --no-setup --root="$(OPAMROOT_DIR)"
+	opam switch --root="$(OPAMROOT_DIR)" create "$(OPAMSWITCH_DIR)" "$(OCAML_COMPILER)"
+
+opamenv:
+	xargs -I{} sh -c 'eval $$(opam env --root="$(OPAMROOT_DIR)" --set-root --switch="$(OPAMSWITCH_DIR)" --set-switch) {}'
+
+%:
+	eval $$(opam env --root="$(OPAMROOT_DIR)" --set-root --switch="$(OPAMSWITCH_DIR)" --set-switch) $(MAKE) '$*'
+
+

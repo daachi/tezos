@@ -1,0 +1,27 @@
+# For FreeBSD make obsolete
+C_INCLUDE_PATH=/usr/local/include 
+# RUST_VERSION=1.44.0
+OPAMROOT:=${PWD}/_root
+OPAMSWITCH_DIR:=${PWD}
+# LD_LIBRARY_PATH:="/usr/local/lib:${LD_LIBRARY_PATH}"
+.export C_INCLUDE_PATH OPAMROOT OPAMSWITCH_DIR
+
+init:
+	opam init --bare --no-opamrc --no-setup --root="${OPAMROOT}"
+
+.for target in hacl-star
+${target}:
+	eval $$(opam env --root="${OPAMROOT}" --switch="${OPAMSWITCH_DIR}") \
+	  cd local-deps && $(MAKE) -f Makefile.freebsd hacl-star
+.endfor
+
+.for target in build-deps all clean \
+  test-coverage test-tezt test-unit test-protocol-compile
+${target}:
+	eval $$(opam env --root="${OPAMROOT}" --switch="${OPAMSWITCH_DIR}") gmake "${target}"
+.endfor
+
+opam:
+	eval $$(opam env --root="${OPAMROOT}" --switch="${OPAMSWITCH_DIR}") \
+	  xargs opam
+	
