@@ -69,4 +69,4 @@ let check_connections_above_cap () =
 
 let register_protocol_independent () =
   check_connections_below_cap () ;
-  check_connections_above_cap ()
+  (* check_connections_above_cap () *)

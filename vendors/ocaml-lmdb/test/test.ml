@@ -15,7 +15,7 @@ let version () =
   let { major ; minor ; patch } = version () in
   assert (major = 0) ;
   assert (minor = 9) ;
-  assert (patch = 70)
+  assert (patch = 24)
 
 let test_string_of_error () =
   let errmsg = string_of_error KeyExist in
@@ -64,6 +64,7 @@ let txn () =
   db_stat rwtxn dbi >>= fun _stat ->
   db_flags rwtxn dbi >>= fun _flags ->
   db_drop rwtxn dbi >>= fun () ->
+  abort_txn rwtxn ;
   closedir env ;
   Ok ()
 
@@ -89,6 +90,9 @@ let cursors () =
   cursor_get cursor >>= fun (k, v) ->
   assert_equal_ba "test" k ;
   assert_equal_ba "test" v ;
+  cursor_close cursor ;
+  db_drop txn db >>= fun () ->
+  abort_txn txn ;
   closedir env ;
   Ok ()
 
@@ -157,6 +161,9 @@ let consistency () =
     (* assert (v = v') ; *)
     assert_equal_ba "bleh" v' ;
     Ok ()
+  end >>= fun () ->
+  with_rw_bd env ~f:begin fun txn db ->
+    db_drop txn db
   end >>= fun () ->
   Ok ()
 
